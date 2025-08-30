@@ -1,0 +1,118 @@
+(async function(){
+  var downloadedUrls = new Set();
+  var messages = [];
+
+  async function downloadBlob(url, filename) {
+    if(!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    try {
+      let response = await fetch(url);
+      let blob = await response.blob();
+      let blobUrl = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch(e) {
+      console.error('Download error:', e, url);
+    }
+  }
+
+  function downloadFile(url, filename) {
+    if (!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  async function downloadMedia(url, filename) {
+    if(url.startsWith('blob:')) {
+      await downloadBlob(url, filename);
+    } else {
+      downloadFile(url, filename);
+    }
+  }
+
+  function cleanMessageHtml(html) {
+    return html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/div>/gi, '\n')
+      .replace(/<span class="time">[\s\S]*?<\/span>/gi, '') // remove timestamps
+      .replace(/<[^>]+>/g, '') // remove HTML tags
+      .trim();
+  }
+
+  async function downloadDocument(anchor, idx) {
+    let href = anchor.href || anchor.getAttribute('href');
+    if(!href) return;
+    if(/\.(pdf|docx?|xls|ppt|zip|rar|txt)$/i.test(href)) {
+      await downloadMedia(href, `document_${idx}${href.match(/\.[^\.]+$/) ? href.match(/\.[^\.]+$/)[0] : '.pdf'}`);
+    }
+  }
+
+  document.querySelectorAll('div.bubble').forEach(async (bubble, idx) => {
+    if(bubble.classList.contains('service')) return;
+
+    var type = bubble.classList.contains('is-out') ? "sent" : "received";
+    var from = bubble.getAttribute('data-peer-id') || '';
+
+    var messageContainer = bubble.querySelector('.message.spoilers-container');
+    if(!messageContainer) return;
+
+    var rawHtml = messageContainer.innerHTML || '';
+    var text = cleanMessageHtml(rawHtml);
+
+    var timeElem = messageContainer.querySelector('div.time-inner');
+    var date = timeElem ? timeElem.getAttribute('title') : '';
+
+    messages.push({type, from, date, text});
+
+    // Audio
+    bubble.querySelectorAll('audio, audio-element audio').forEach(async (audio, i) => {
+      let src = audio.currentSrc || audio.src || audio.getAttribute('src');
+      if(src) await downloadMedia(src, `audio_${idx}_${i}.mp3`);
+    });
+
+    // Images
+    bubble.querySelectorAll('div.attachment.media-container.no-background img.media-photo').forEach(async (img, i) => {
+      let src = img.src || img.getAttribute('src');
+      if(src) await downloadMedia(src, `image_${idx}_${i}.jpg`);
+    });
+
+    // Videos
+    bubble.querySelectorAll('video.media-video').forEach(async (video, i) => {
+      let src = video.currentSrc || video.src || video.getAttribute('src');
+      if(src) await downloadMedia(src, `video_${idx}_${i}.mp4`);
+    });
+
+    // Documents
+    bubble.querySelectorAll('div.document-container.is-first.is-last a').forEach((anchor, i) => {
+      downloadDocument(anchor, `${idx}_${i}`);
+    });
+  });
+
+  // Export text messages JSON file
+  var result = JSON.stringify(messages, null, 2);
+  var blob = new Blob([result], {type: "application/json"});
+  var url = URL.createObjectURL(blob);
+
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'telegram_chat_export.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  console.log('Chat text exported and media downloads triggered.');
+})();
+
+VM6118:114 Chat text exported and media downloads triggered.
+Promise {<fulfilled>: undefined}
