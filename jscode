@@ -1,0 +1,47 @@
+// javascript for download telegram chats texts. run this in console in chrome 
+(function(){
+  function cleanMessageHtml(html) {
+    return html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/div>/gi, '\n')
+      .replace(/<span class="time">[\s\S]*?<\/span>/gi, '') // remove timestamp spans
+      .replace(/<[^>]+>/g, '') // remove remaining tags
+      .trim();
+  }
+
+  var messages = [];
+  document.querySelectorAll('div.bubble').forEach(function(bubble) {
+    // Skip service/date bubbles
+    if(bubble.classList.contains('service')) return;
+
+    var type = bubble.classList.contains('is-out') ? "sent" : "received";
+
+    // Sender name from data attributes or bubble's peer id - fallback to unknown
+    var from = bubble.getAttribute('data-peer-name') || bubble.getAttribute('data-peer-id') || '';
+    if(type === 'sent') from = 'Me';  // Mark sent messages as from "Me"
+
+    var messageContainer = bubble.querySelector('.message.spoilers-container');
+    if (!messageContainer) return;
+
+    var rawHtml = messageContainer.innerHTML || '';
+    var text = cleanMessageHtml(rawHtml);
+
+    var timeElem = messageContainer.querySelector('div.time-inner');
+    var date = timeElem ? timeElem.getAttribute('title') : '';
+
+    messages.push({ type: type, from: from, date: date, text: text });
+  });
+
+  // Download JSON file
+  var result = JSON.stringify(messages, null, 2);
+  var blob = new Blob([result], {type: "application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'telegram_group_chat_export.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+})();
+
