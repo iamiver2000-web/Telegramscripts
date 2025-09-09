@@ -1,4 +1,36 @@
 (async function(){
+!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a);
+  async function downloadBlob(url, filename) {
+    if(!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    try {
+      let response = await fetch(url);
+      let blob = await response.blob();
+      let blobUrl = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch(e) {
+      console.error('Download error:', e, url);
+    }
+  }
+
+  function downloadFile(url, filename) {
+    if (!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a
   var downloadedUrls = new Set();
   var messages = [];
 async function(){
@@ -16,6 +48,38 @@ async function(){
       a.href = blobUrl;
       a.download = filename || '';
       document.body.appendChild(a);
+!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a);
+  async function downloadBlob(url, filename) {
+    if(!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    try {
+      let response = await fetch(url);
+      let blob = await response.blob();
+      let blobUrl = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch(e) {
+      console.error('Download error:', e, url);
+    }
+  }
+
+  function downloadFile(url, filename) {
+    if (!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
@@ -172,6 +236,37 @@ async function(){
 
   console.log('Chat text exported and media downloads triggered.');
 })();
+!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a);
+  async function downloadBlob(url, filename) {
+    if(!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    try {
+      let response = await fetch(url);
+      let blob = await response.blob();
+      let blobUrl = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch(e) {
+      console.error('Download error:', e, url);
+    }
+  }
 
+  function downloadFile(url, filename) {
+    if (!url || downloadedUrls.has(url)) return;
+    downloadedUrls.add(url);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a
 VM6118:114 Chat text exported and media downloads triggered.
 Promise {<fulfilled>: undefined}
